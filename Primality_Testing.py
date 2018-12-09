@@ -1,9 +1,13 @@
 from math import sqrt
+import random
 #Headers
 ntd_header = '-----Naive Trial Division-----\n'
 trial_division_header = '-----Improved Trial Division-----\n'
 wilson_theorem_header = '-----Wilson\'s Theorem-----\n'
-
+fermat_header = '-----Fermat Test (Probablistic)-----\n'
+miller_rabin_header = '-----Miller Rabin Test (Probabilistic)-----\n'
+#Constant
+k = 5 #number of trials in probabilistic prime tests
 
 def naive_trial_div(n): #this test checks every number between 2 and n; this is woefully ineffectient
     if (n < 2):
@@ -34,6 +38,47 @@ def wilson_theorem(n):
     print('{0}! mod {1} == ({1} - 1): {2}'.format(factorial, n, (factorial == n - 1)))
     return (factorial == n - 1) #True if n is prime
 
+#Fermat Test is a probabilistic test, as a false positive result is plausible
+#k is the number of randomly selected 'a' values to test
+def fermat(n, k):
+    for i in range(k):
+        a = random.randrange(2, n)
+        print('a = {}'.format(a))
+        print('({0} ^ ({1}-1)) mod {1} = {2}\n'.format(a, n, pow(a, n - 1, n)))
+        if (pow(a, n - 1, n) != 1):
+            return False
+    else: 
+        return True #probably prime
+
+#Miller-Rabin Test
+def miller_rabin(n, k):
+    if (n < 2):
+        return False
+    if (n < 4):
+        return True
+    if (n % 2 == 0):
+        return False
+    # n > 3, and is odd
+    s = 0
+    d = n - 1
+    while(d % 2 ==0):
+        s += 1
+        d //= 2
+    #n = (2 ^ s) * d where d is odd
+
+    for i in range (k):
+        a = random.randrange(2, n - 1) # 2 <= a <= n - 2
+        x = (a ** d) % n
+        if x == 1:
+            continue
+        for j in range(s):
+            if x == n - 1:
+                break
+            x = (x * x) % n
+        else:
+            return False
+    return True
+
 def main():
     print('Enter the number to determine primality: ')
     n = int(input())
@@ -62,6 +107,22 @@ def main():
         print('\n[-] n is composite\n')
     print(wilson_theorem_header)
 
-    #TODO Fermat, Miller-Rabin, AKS primality tests
+    #Fermat Probabilistic Test
+    print(fermat_header)
+    if (fermat(n, k) is True):
+        print('\n[+] n is probably prime\n')
+    else:
+        print('\n[-] n is composite\n')
+    print(fermat_header)
+
+    #Miller-Rabin Probabilistic Test
+    print(miller_rabin_header)
+    if (miller_rabin(n, k) is True):
+        print('\n[+] n is probably prime\n')
+    else:
+        print('\n[-] n is composite\n')
+    print(miller_rabin_header)
+
+    #TODO AKS primality test, print Miller-Rabin steps
 if __name__ == '__main__':
     main()
